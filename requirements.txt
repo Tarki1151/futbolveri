@@ -1,0 +1,4 @@
+typer==0.12.3
+psycopg==3.1.20
+requests==2.31.0
+click==8.1.7

@@ -1,0 +1,20 @@
+{
+  "Goalkeeper": "kaleci",
+  "Keeper": "kaleci",
+  "Defender": "savunmaci",
+  "Right Back": "savunmaci",
+  "Left Back": "savunmaci",
+  "Center Back": "savunmaci",
+  "Wing Back": "savunmaci",
+  "Midfielder": "ortasaha",
+  "Defensive Midfield": "ortasaha",
+  "Central Midfield": "ortasaha",
+  "Attacking Midfield": "ortasaha",
+  "Right Midfield": "ortasaha",
+  "Left Midfield": "ortasaha",
+  "Winger": "ortasaha",
+  "Forward": "forvet",
+  "Striker": "forvet",
+  "Centre Forward": "forvet",
+  "Second Striker": "forvet"
+}

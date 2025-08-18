@@ -1,0 +1,10 @@
+.git
+.env
+/secrets
+/archive
+./archive/*
+venv
+/venv
+/venv/*
+.venv
+.venv/*
