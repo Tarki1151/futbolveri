@@ -1,6 +1,7 @@
 import os
 import time
 from typing import Dict, Generator, List, Optional
+from datetime import date, timedelta
 
 import requests
 
@@ -154,3 +155,30 @@ def recent_fixtures(team_id: int, last_n: int = 10, api_key: Optional[str] = Non
     params = {"team": team_id, "last": last_n, "status": "FT"}
     data = _get_json(s, f"{API_BASE}/fixtures", params=params)
     return data.get("response", [])
+
+
+def fixtures_by_date_range(team_id: int, start_date: str, end_date: str, api_key: Optional[str] = None) -> List[Dict]:
+    """Return finished fixtures for a team within [start_date, end_date] (YYYY-MM-DD)."""
+    s = _session(api_key)
+    out: List[Dict] = []
+    page = 1
+    while True:
+        params = {"team": team_id, "from": start_date, "to": end_date, "status": "FT", "page": page}
+        data = _get_json(s, f"{API_BASE}/fixtures", params=params)
+        items = data.get("response", [])
+        out.extend(items)
+        paging = data.get("paging") or {}
+        cur = paging.get("current")
+        tot = paging.get("total")
+        if not cur or not tot or cur >= tot:
+            break
+        page += 1
+        time.sleep(0.2)
+    return out
+
+
+def fixtures_last_years(team_id: int, years: int = 5, api_key: Optional[str] = None) -> List[Dict]:
+    """Return finished fixtures for the last given number of years (inclusive to today)."""
+    end = date.today()
+    start = end - timedelta(days=365 * max(1, years))
+    return fixtures_by_date_range(team_id, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"), api_key)

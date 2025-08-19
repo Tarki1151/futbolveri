@@ -26,6 +26,12 @@
     .v { font-weight: 600; font-size: 16px; color: #f2f4ff; }
     .top { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .chip { background: #1b2a55; color: #f2f4ff; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .section-title { margin-top: 14px; color: #9fb0df; font-size: 12px; letter-spacing: .3px; text-transform: uppercase; }
+    .pill.highlight { border-color: #2e5cff; box-shadow: 0 0 0 1px rgba(46,92,255,.3) inset; }
+    .chip.highlight { background: #2e5cff; color: #fff; }
+    .icon-btn { background: #0e1630; border: 1px solid #2a3a6e; color: #f2f4ff; width: 40px; height: 40px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .icon-btn:hover { border-color: #2e5cff; }
+    .col.narrow { flex: 0 0 56px; display: flex; align-items: flex-end; justify-content: center; }
   </style>
 </head>
 <body>
@@ -38,6 +44,9 @@
           <input id="home" type="text" placeholder="Galatasaray" autocomplete="off" />
           <div id="home-list" class="suggest-list" style="display:none"></div>
           <div id="home-picked" class="muted"></div>
+        </div>
+        <div class="col narrow">
+          <button id="swap" class="icon-btn" title="Takımları Değiştir" aria-label="Takımları Değiştir">⇄</button>
         </div>
         <div class="col suggest">
           <label>Deplasman</label>

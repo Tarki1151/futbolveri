@@ -2,6 +2,7 @@ import math
 import time
 from typing import Dict, List, Any, Optional, Tuple
 import difflib
+import unicodedata
 
 from clients import api_football as apif
 from clients import football_data as fdata
@@ -43,9 +44,35 @@ def _best_match(name: str, items: List[Dict[str, Any]], key: str) -> Optional[Di
 
 async def resolve_team_providers(team_name: str) -> Dict[str, Any]:
     out: Dict[str, Any] = {"api_football": None, "football_data": None}
-    # API-Football search
+    # Helpers for normalization
+    def _strip_accents(s: str) -> str:
+        try:
+            return "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
+        except Exception:
+            return s
+
+    def _tr_simplify(s: str) -> str:
+        tbl = str.maketrans({
+            "ç": "c", "Ç": "C",
+            "ğ": "g", "Ğ": "G",
+            "ı": "i", "İ": "I",
+            "ö": "o", "Ö": "O",
+            "ş": "s", "Ş": "S",
+            "ü": "u", "Ü": "U",
+        })
+        return s.translate(tbl)
+
+    # API-Football search with fallbacks
     try:
         res = apif.search_teams(team_name)
+        if not res:
+            alt = _tr_simplify(team_name)
+            if alt != team_name:
+                res = apif.search_teams(alt)
+        if not res:
+            alt2 = _strip_accents(team_name)
+            if alt2 != team_name:
+                res = apif.search_teams(alt2)
         if res:
             # normalize into items with id+name
             cand = []
@@ -73,8 +100,23 @@ async def resolve_team_providers(team_name: str) -> Dict[str, Any]:
 
 
 def _recent_goals_from_apif(team_id: int, last_n: int = 10) -> Tuple[float, float]:
-    """Return (avg_scored, avg_conceded) from last N finished matches."""
-    fixtures = apif.recent_fixtures(team_id, last_n=last_n)
+    """Return (avg_scored, avg_conceded) using fixtures from at least last 5 years.
+
+    Strategy:
+      1) Try last 5 years (date range, paginated).
+      2) Fallback to recent windows (last_n, 25, 50) if empty.
+      3) If still empty, use neutral prior (1.1, 1.1).
+    """
+    try:
+        fixtures = apif.fixtures_last_years(team_id, years=5)
+    except Exception:
+        fixtures = []
+    if not fixtures:
+        fixtures = apif.recent_fixtures(team_id, last_n=last_n) or []
+    if not fixtures:
+        fixtures = apif.recent_fixtures(team_id, last_n=25) or []
+    if not fixtures:
+        fixtures = apif.recent_fixtures(team_id, last_n=50) or []
     if not fixtures:
         return (1.1, 1.1)  # neutral prior
     gs = 0.0
@@ -141,7 +183,9 @@ async def predict_match(home_name: str, away_name: str, prov_home: Dict[str, Any
     lh = la = 1.2  # priors
     src_used = {"api_football": False, "football_data": False}
     try:
-        if prov_home.get("api_football") and prov_away.get("api_football"):
+        have_h = prov_home.get("api_football")
+        have_a = prov_away.get("api_football")
+        if have_h and have_a:
             h_id = prov_home["api_football"]["id"]
             a_id = prov_away["api_football"]["id"]
             h_for, h_against = _recent_goals_from_apif(h_id)
@@ -149,6 +193,19 @@ async def predict_match(home_name: str, away_name: str, prov_home: Dict[str, Any
             # Blend for expected goals
             lh = 0.6 * h_for + 0.4 * a_against
             la = 0.6 * a_for + 0.4 * h_against
+            src_used["api_football"] = True
+        elif have_h or have_a:
+            # Use whatever is available to move off prior
+            if have_h:
+                h_id = prov_home["api_football"]["id"]
+                h_for, h_against = _recent_goals_from_apif(h_id)
+                lh = 0.7 * h_for + 0.3 * lh
+                la = 0.6 * la + 0.4 * h_against
+            if have_a:
+                a_id = prov_away["api_football"]["id"]
+                a_for, a_against = _recent_goals_from_apif(a_id)
+                la = 0.7 * a_for + 0.3 * la
+                lh = 0.6 * lh + 0.4 * a_against
             src_used["api_football"] = True
     except Exception:
         pass

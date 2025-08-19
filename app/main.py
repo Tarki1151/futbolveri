@@ -94,8 +94,22 @@ async def predict(home: str = Query(...), away: str = Query(...)) -> Dict[str, A
                         rows = cur.fetchall()
         if not rows:
             return None
-        # choose best by difflib
-        best = max(rows, key=lambda r: difflib.SequenceMatcher(a=name.lower(), b=(r[1] or '').lower()).ratio())
+        # filter artifacts and choose best by difflib
+        blocked_exact = {"opponent", "opponents", "squad", "team", "club", "teams", "clubs"}
+        filt = []
+        for r in rows:
+            nm = (r[1] or "").strip()
+            if not nm:
+                continue
+            lower = nm.lower()
+            if lower.startswith("vs "):
+                continue
+            if lower in blocked_exact:
+                continue
+            filt.append(r)
+        if not filt:
+            filt = rows
+        best = max(filt, key=lambda r: difflib.SequenceMatcher(a=name.lower(), b=(r[1] or '').lower()).ratio())
         return {"id": best[0], "name": best[1], "key": best[2]}
 
     home_row = resolve_one(home)
