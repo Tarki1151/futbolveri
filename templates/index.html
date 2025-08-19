@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Futbol Tahmin</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; background: #0b1020; color: #e6e8ef; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 16px; color: #f2f4ff; }
+    .card { background: #121a34; border: 1px solid #1f2a4d; border-radius: 10px; padding: 16px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .col { flex: 1 1 300px; }
+    label { display: block; font-size: 12px; color: #9fb0df; margin-bottom: 6px; }
+    input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #26345e; background: #0e1630; color: #e6e8ef; }
+    .btn { background: #2e5cff; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .suggest { position: relative; }
+    .suggest-list { position: absolute; z-index: 10; background: #0e1630; border: 1px solid #26345e; width: 100%; border-radius: 8px; margin-top: 4px; max-height: 220px; overflow: auto; }
+    .suggest-item { padding: 8px 10px; cursor: pointer; }
+    .suggest-item:hover { background: #1b2a55; }
+    .muted { color: #9fb0df; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .pill { background: #0e1630; border: 1px solid #2a3a6e; border-radius: 8px; padding: 10px; text-align: center; }
+    .k { color: #9fb0df; font-size: 11px; }
+    .v { font-weight: 600; font-size: 16px; color: #f2f4ff; }
+    .top { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .chip { background: #1b2a55; color: #f2f4ff; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Maç Sonucu Tahmin</h1>
+    <div class="card">
+      <div class="row">
+        <div class="col suggest">
+          <label>Ev sahibi</label>
+          <input id="home" type="text" placeholder="Galatasaray" autocomplete="off" />
+          <div id="home-list" class="suggest-list" style="display:none"></div>
+          <div id="home-picked" class="muted"></div>
+        </div>
+        <div class="col suggest">
+          <label>Deplasman</label>
+          <input id="away" type="text" placeholder="Fenerbahçe" autocomplete="off" />
+          <div id="away-list" class="suggest-list" style="display:none"></div>
+          <div id="away-picked" class="muted"></div>
+        </div>
+        <div class="col" style="align-self:flex-end">
+          <button id="go" class="btn">Tahmin Et</button>
+        </div>
+      </div>
+      <div id="out" style="margin-top:14px"></div>
+    </div>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
